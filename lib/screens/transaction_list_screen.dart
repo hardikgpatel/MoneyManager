@@ -9,31 +9,47 @@ class TransactionListScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text('Transactions'),
       ),
-      body: Consumer(
-        builder: (context, ref, _) {
-          final transactions = ref(transactionProvider).state;
-          return ListView.builder(
-            itemBuilder: (context, index) {
-              return Card(
-                margin: EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
-                child: Padding(
-                  padding: EdgeInsets.all(10),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(transactions[index].title),
-                      Text(transactions[index].amount.toString()),
-                      Text(transactions[index].description),
-                      Text(transactions[index].transactionDate.toLocal().toString()),
-                      Text(transactions[index].wallet),
-                    ],
-                  ),
-                ),
+      body: Stack(
+        children: [
+          Consumer(
+            builder: (context, ref, _) {
+              final transactions = ref(transactionProvider).state;
+              return ListView.builder(
+                itemBuilder: (context, index) {
+                  return Card(
+                    margin:
+                        EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
+                    child: Padding(
+                      padding: EdgeInsets.all(10),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(transactions[index].title),
+                          Text(transactions[index].amount.toString()),
+                          Text(transactions[index].description),
+                          Text(transactions[index]
+                              .transactionDate
+                              .toLocal()
+                              .toString()),
+                          Text(transactions[index].wallet),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+                itemCount: transactions.length,
               );
             },
-            itemCount: transactions.length,
-          );
-        },
+          ),
+          FloatingActionButton(
+            onPressed: () {
+              Navigator.of(context).push(MaterialPageRoute(builder: (_)=>HomeScreen()));
+            },
+            child: Icon(
+              Icons.add,
+            ),
+          )
+        ],
       ),
     );
   }

@@ -1,4 +1,5 @@
 import 'package:MoneyManager/screens/home_screen.dart';
+import 'package:MoneyManager/screens/transaction_list_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -13,6 +14,8 @@ void main() {
 class MoneyManager extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(home: HomeScreen());
+    return MaterialApp(
+      home: TransactionListScreen(),
+    );
   }
 }
