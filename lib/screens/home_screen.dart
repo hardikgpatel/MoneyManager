@@ -1,11 +1,10 @@
 import 'package:MoneyManager/model/transaction_model.dart';
+import 'package:MoneyManager/provider/transaction_provider.dart';
 import 'package:MoneyManager/screens/transaction_list_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-final transactionProvider = StateProvider((ref) => <TransactionModel>[]);
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -70,10 +69,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     transactionDate: DateTime.now(),
                   );
 
-                  final list = context.read(transactionProvider).state;
-                  list.add(_transaction);
-
-                  context.read(transactionProvider).state = list;
+                  context.read(transactionProvider).addTransaction(_transaction);
 
                   _titleController.clear();
                   _amountController.clear();
