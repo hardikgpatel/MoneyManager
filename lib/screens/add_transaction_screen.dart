@@ -1,9 +1,11 @@
 import 'package:MoneyManager/model/transaction_model.dart';
+import 'package:MoneyManager/model/wallet_model.dart';
 import 'package:MoneyManager/provider/transaction_provider.dart';
-import 'package:MoneyManager/screens/transaction_list_screen.dart';
+import 'package:MoneyManager/provider/wallet_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class AddTransactionScreen extends HookWidget {
   static const routeName = 'AddTransactionScreen';
@@ -11,9 +13,10 @@ class AddTransactionScreen extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final _titleController = useTextEditingController();
-    final _fromController = useTextEditingController();
     final _descriptionController = useTextEditingController();
     final _amountController = useTextEditingController();
+    final wallets = useProvider(walletProvider.state);
+    final selectedWallet = useState(wallets[0].id);
 
     return Scaffold(
       appBar: AppBar(
@@ -33,9 +36,26 @@ class AddTransactionScreen extends HookWidget {
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(hintText: 'Amount'),
               ),
-              TextField(
-                controller: _fromController,
-                decoration: InputDecoration(hintText: 'Transaction From'),
+              Row(
+                children: [
+                  Text('Transaction From '),
+                  SizedBox(width: 10,),
+                  DropdownButton(
+                    value: selectedWallet.value ?? WalletModel(id: 'Money'),
+                    onChanged: (value) {
+                      selectedWallet.value = value;
+                    },
+                    hint: Text('Select Wallet'),
+                    items: wallets.map<DropdownMenuItem<String>>((wallet) {
+                      return DropdownMenuItem<String>(
+                        value: wallet.id,
+                        key: ValueKey(wallet.id),
+                        child: Text(wallet.id),
+                      );
+                    }).toList(),
+
+                  ),
+                ],
               ),
               TextField(
                 minLines: 5,
@@ -51,7 +71,7 @@ class AddTransactionScreen extends HookWidget {
                   TransactionModel _transaction = TransactionModel(
                     title: _titleController.text,
                     amount: int.parse(_amountController.text),
-                    wallet: _fromController.text,
+                    wallet: selectedWallet.value,
                     description: _descriptionController.text,
                     transactionDate: DateTime.now(),
                   );
@@ -62,7 +82,6 @@ class AddTransactionScreen extends HookWidget {
 
                   _titleController.clear();
                   _amountController.clear();
-                  _fromController.clear();
                   _descriptionController.clear();
 
                   Navigator.of(context).pop();

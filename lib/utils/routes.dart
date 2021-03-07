@@ -1,6 +1,8 @@
 import 'package:MoneyManager/screens/add_transaction_screen.dart';
+import 'package:MoneyManager/screens/add_wallet_screen.dart';
 import 'package:MoneyManager/screens/home_screen.dart';
 import 'package:MoneyManager/screens/transaction_list_screen.dart';
+import 'package:MoneyManager/screens/wallet_screen.dart';
 import 'package:flutter/material.dart';
 
 class Routes {
@@ -24,6 +26,18 @@ class Routes {
         return MaterialPageRoute(
           builder: (context) {
             return AddTransactionScreen();
+          },
+        );
+      case WalletScreen.routeName:
+        return MaterialPageRoute(
+          builder: (context) {
+            return WalletScreen();
+          },
+        );
+      case AddWalletScreen.routeName:
+        return MaterialPageRoute(
+          builder: (context) {
+            return AddWalletScreen();
           },
         );
       default:

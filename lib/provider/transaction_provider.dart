@@ -1,6 +1,4 @@
 import 'package:MoneyManager/model/transaction_model.dart';
-import 'package:MoneyManager/model/transaction_model.dart';
-import 'package:MoneyManager/model/transaction_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final transactionProvider =
@@ -10,6 +8,8 @@ class Transaction extends StateNotifier<List<TransactionModel>> {
   Transaction(state) : super([]);
 
   void addTransaction(TransactionModel transaction) {
-    state.add(transaction);
+    final transactions = state;
+    transactions.add(transaction);
+    state = transactions;
   }
 }

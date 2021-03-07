@@ -1,5 +1,6 @@
 import 'package:MoneyManager/screens/add_transaction_screen.dart';
 import 'package:MoneyManager/screens/transaction_list_screen.dart';
+import 'package:MoneyManager/screens/wallet_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 
@@ -46,12 +47,12 @@ class AppDrawer extends HookWidget {
             },
           ),
           _drawerItem(
-            'Add Transaction',
-            Icons.library_add_sharp,
-            () {
+            'Wallet',
+            Icons.account_balance_wallet_outlined,
+                () {
               Navigator.of(context).pop();
               Navigator.of(context).pushNamed(
-                AddTransactionScreen.routeName,
+                WalletScreen.routeName,
               );
             },
           ),
