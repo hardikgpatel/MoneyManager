@@ -1,13 +1,21 @@
 class WalletModel {
   final String id;
-  final int amount;
+  int amount;
   final DateTime createdDate;
-  final bool isDefault;
+  bool isDefault;
 
   WalletModel({
-    this.id,
-    this.amount,
-    this.createdDate,
-    this.isDefault,
+    required this.id,
+    required this.amount,
+    required this.createdDate,
+    required this.isDefault,
   });
+
+  deductAmount(int value) {
+    amount = amount - value;
+  }
+
+  changeDefault(bool value) {
+    isDefault = value;
+  }
 }

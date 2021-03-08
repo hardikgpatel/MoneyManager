@@ -6,10 +6,10 @@ class TransactionModel {
   final int amount;
 
   TransactionModel({
-    this.title,
-    this.wallet,
+    required this.title,
+    required this.wallet,
     this.description = '',
-    this.transactionDate,
-    this.amount,
+    required this.transactionDate,
+    required this.amount,
   });
 }

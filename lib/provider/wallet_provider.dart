@@ -9,15 +9,40 @@ final defaultWallet = WalletModel(
 );
 
 final walletProvider = StateNotifierProvider<WalletStateNotifier>(
-    (ref) => WalletStateNotifier([defaultWallet]));
+    (ref) => WalletStateNotifier());
 
 class WalletStateNotifier extends StateNotifier<List<WalletModel>> {
-
-  WalletStateNotifier(state) : super([]);
+  WalletStateNotifier() : super([defaultWallet]);
 
   void addWallet(WalletModel walletModel) {
-    final wallets = state;
+    final List<WalletModel> wallets = state;
+    wallets.forEach((element) {
+      element.changeDefault(false);
+    });
     wallets.add(walletModel);
     state = wallets;
+  }
+
+  void deductAmount({required int amount, String? walletId}) {
+    final WalletModel wallet = state.firstWhere((w) => w.id == walletId);
+    wallet.deductAmount(amount);
+  }
+
+  void markAsDefault({String? walletId}) {
+    final List<WalletModel> list = state;
+    list.forEach((wallet) {
+      if (wallet.id == walletId) {
+        wallet.changeDefault(true);
+      } else {
+        wallet.changeDefault(false);
+      }
+    });
+    state = list;
+  }
+
+  void removeWallet({String? walletId}) {
+    final List<WalletModel> list = state;
+    list.removeAt(list.indexWhere((element) => element.id == walletId));
+    state = list;
   }
 }

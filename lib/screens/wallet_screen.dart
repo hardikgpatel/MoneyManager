@@ -11,6 +11,26 @@ class WalletScreen extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final wallets = useProvider(walletProvider.state);
+    wallets.sort((a, b) {
+      if (b.isDefault!) {
+        return 1;
+      }
+      return -1;
+    });
+
+    PopupMenuItem renderPopupMenuItem(String title, String value) {
+      return PopupMenuItem(
+        textStyle: TextStyle(
+          fontSize: 12,
+          color: Colors.black87,
+        ),
+        child: Text(
+          title,
+        ),
+        value: value,
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Wallets'),
@@ -26,10 +46,43 @@ class WalletScreen extends HookWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(wallets[index].id),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(wallets[index].id!),
+                          PopupMenuButton(
+                            onSelected: (dynamic value) {
+                              if (value == 'default') {
+                                context
+                                    .read(walletProvider)
+                                    .markAsDefault(walletId: wallets[index].id);
+                              } else if (value == 'delete') {
+                                context
+                                    .read(walletProvider)
+                                    .removeWallet(walletId: wallets[index].id);
+                              }
+                            },
+                            itemBuilder: (context) => [
+                              renderPopupMenuItem('Edit wallet', 'edit'),
+                              renderPopupMenuItem('Mark as default', 'default'),
+                              if (!wallets[index].isDefault!)
+                                renderPopupMenuItem('Remove wallet', 'delete'),
+                            ],
+                            child: Container(
+                              child: Align(
+                                alignment: Alignment.centerRight,
+                                child: Icon(
+                                  Icons.more_vert,
+                                  size: 20,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                       Text(wallets[index].amount.toString()),
                       Text(
-                        wallets[index].isDefault
+                        wallets[index].isDefault!
                             ? 'Primary Wallet'
                             : 'Secondary Waller',
                       ),

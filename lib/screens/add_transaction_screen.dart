@@ -2,6 +2,7 @@ import 'package:MoneyManager/model/transaction_model.dart';
 import 'package:MoneyManager/model/wallet_model.dart';
 import 'package:MoneyManager/provider/transaction_provider.dart';
 import 'package:MoneyManager/provider/wallet_provider.dart';
+import 'package:MoneyManager/screens/add_wallet_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,10 +13,16 @@ class AddTransactionScreen extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final _titleController = useTextEditingController();
-    final _descriptionController = useTextEditingController();
-    final _amountController = useTextEditingController();
+    final TextEditingController? _titleController = useTextEditingController();
+    final TextEditingController? _descriptionController = useTextEditingController();
+    final TextEditingController? _amountController = useTextEditingController();
     final wallets = useProvider(walletProvider.state);
+    wallets.sort((a, b) {
+      if (b.isDefault!) {
+        return 1;
+      }
+      return -1;
+    });
     final selectedWallet = useState(wallets[0].id);
 
     return Scaffold(
@@ -39,21 +46,25 @@ class AddTransactionScreen extends HookWidget {
               Row(
                 children: [
                   Text('Transaction From '),
-                  SizedBox(width: 10,),
+                  SizedBox(
+                    width: 10,
+                  ),
                   DropdownButton(
-                    value: selectedWallet.value ?? WalletModel(id: 'Money'),
-                    onChanged: (value) {
+                    value: selectedWallet.value,
+                    onChanged: (dynamic value) {
                       selectedWallet.value = value;
                     },
                     hint: Text('Select Wallet'),
                     items: wallets.map<DropdownMenuItem<String>>((wallet) {
+                      if(wallet.isDefault!) {
+                        selectedWallet.value = wallet.id;
+                      }
                       return DropdownMenuItem<String>(
                         value: wallet.id,
                         key: ValueKey(wallet.id),
-                        child: Text(wallet.id),
+                        child: Text(wallet.id!),
                       );
                     }).toList(),
-
                   ),
                 ],
               ),
@@ -69,16 +80,21 @@ class AddTransactionScreen extends HookWidget {
               ElevatedButton.icon(
                 onPressed: () {
                   TransactionModel _transaction = TransactionModel(
-                    title: _titleController.text,
-                    amount: int.parse(_amountController.text),
+                    title: _titleController!.text,
+                    amount: int.parse(_amountController!.text),
                     wallet: selectedWallet.value,
-                    description: _descriptionController.text,
+                    description: _descriptionController!.text,
                     transactionDate: DateTime.now(),
                   );
 
                   context
                       .read(transactionProvider)
                       .addTransaction(_transaction);
+
+                  context.read(walletProvider).deductAmount(
+                        amount: int.parse(_amountController.text),
+                        walletId: selectedWallet.value,
+                      );
 
                   _titleController.clear();
                   _amountController.clear();

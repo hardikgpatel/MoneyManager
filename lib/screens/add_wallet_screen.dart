@@ -9,9 +9,9 @@ class AddWalletScreen extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDefaultWallet = useState(false);
-    final nameTextController = useTextEditingController();
-    final openingAmountController = useTextEditingController();
+    final isDefaultWallet = useState(context.read(walletProvider.state).length == 0);
+    final TextEditingController? nameTextController = useTextEditingController();
+    final TextEditingController? openingAmountController = useTextEditingController();
 
     return Scaffold(
       appBar: AppBar(
@@ -43,7 +43,7 @@ class AddWalletScreen extends HookWidget {
                 Checkbox(
                   value: isDefaultWallet.value,
                   onChanged: (value) {
-                    isDefaultWallet.value = value;
+                    isDefaultWallet.value = value!;
                   },
                 ),
                 SizedBox(
@@ -59,8 +59,8 @@ class AddWalletScreen extends HookWidget {
               onPressed: () {
 
                 final  walletModel = WalletModel(
-                  id: nameTextController.text,
-                  amount: int.parse(openingAmountController.text),
+                  id: nameTextController!.text,
+                  amount: int.parse(openingAmountController!.text),
                   isDefault: isDefaultWallet.value,
                   createdDate: DateTime.now(),
                 );
