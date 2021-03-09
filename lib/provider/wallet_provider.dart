@@ -9,10 +9,11 @@ final defaultWallet = WalletModel(
 );
 
 final walletProvider = StateNotifierProvider<WalletStateNotifier>(
-    (ref) => WalletStateNotifier());
+    (ref) => WalletStateNotifier(ref.read));
 
 class WalletStateNotifier extends StateNotifier<List<WalletModel>> {
-  WalletStateNotifier() : super([defaultWallet]);
+  final Reader reader;
+  WalletStateNotifier(this.reader) : super([defaultWallet]);
 
   void addWallet(WalletModel walletModel) {
     final List<WalletModel> wallets = state;
@@ -26,6 +27,11 @@ class WalletStateNotifier extends StateNotifier<List<WalletModel>> {
   void deductAmount({required int amount, String? walletId}) {
     final WalletModel wallet = state.firstWhere((w) => w.id == walletId);
     wallet.deductAmount(amount);
+  }
+
+  void addAmount({required int amount, required String walletId}) {
+    final WalletModel wallet = state.firstWhere((w) => w.id == walletId);
+    wallet.addAmount(amount);
   }
 
   void markAsDefault({String? walletId}) {

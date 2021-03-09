@@ -12,7 +12,11 @@ class WalletModel {
   });
 
   deductAmount(int value) {
-    amount = amount - value;
+    amount -= value;
+  }
+
+  addAmount(int value) {
+    amount += value;
   }
 
   changeDefault(bool value) {

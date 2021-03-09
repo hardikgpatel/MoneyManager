@@ -1,8 +1,11 @@
+import 'package:MoneyManager/provider/wallet_provider.dart';
 import 'package:MoneyManager/screens/add_transaction_screen.dart';
 import 'package:MoneyManager/screens/transaction_list_screen.dart';
+import 'package:MoneyManager/screens/transfer_fund_screen.dart';
 import 'package:MoneyManager/screens/wallet_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class AppDrawer extends HookWidget {
   Widget _drawerItem(title, icon, onTap) {
@@ -28,6 +31,7 @@ class AppDrawer extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
+    final wallets = useProvider(walletProvider.state);
     return Container(
       width: 300,
       color: Colors.white,
@@ -53,6 +57,17 @@ class AppDrawer extends HookWidget {
               Navigator.of(context).pop();
               Navigator.of(context).pushNamed(
                 WalletScreen.routeName,
+              );
+            },
+          ),
+          if(wallets.length > 1)
+          _drawerItem(
+            'Transfer Fund',
+            Icons.double_arrow_outlined,
+                () {
+              Navigator.of(context).pop();
+              Navigator.of(context).pushNamed(
+                TransferFund.routeName,
               );
             },
           ),

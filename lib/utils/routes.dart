@@ -2,6 +2,7 @@ import 'package:MoneyManager/screens/add_transaction_screen.dart';
 import 'package:MoneyManager/screens/add_wallet_screen.dart';
 import 'package:MoneyManager/screens/home_screen.dart';
 import 'package:MoneyManager/screens/transaction_list_screen.dart';
+import 'package:MoneyManager/screens/transfer_fund_screen.dart';
 import 'package:MoneyManager/screens/wallet_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -38,6 +39,12 @@ class Routes {
         return MaterialPageRoute(
           builder: (context) {
             return AddWalletScreen();
+          },
+        );
+      case TransferFund.routeName:
+        return MaterialPageRoute(
+          builder: (context) {
+            return TransferFund();
           },
         );
       default:

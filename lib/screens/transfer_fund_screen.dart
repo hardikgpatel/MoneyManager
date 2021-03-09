@@ -2,32 +2,27 @@ import 'package:MoneyManager/model/transaction_model.dart';
 import 'package:MoneyManager/provider/transaction_provider.dart';
 import 'package:MoneyManager/provider/wallet_provider.dart';
 import 'package:MoneyManager/screens/transaction_list_screen.dart';
+import 'package:MoneyManager/screens/wallet_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-class AddTransactionScreen extends HookWidget {
-  static const routeName = 'AddTransactionScreen';
+class TransferFund extends HookWidget {
+  static const routeName = 'TransferFundScreen';
 
   @override
   Widget build(BuildContext context) {
     final TextEditingController? _titleController = useTextEditingController();
-    final TextEditingController? _descriptionController = useTextEditingController();
+    final TextEditingController? _descriptionController =
+        useTextEditingController();
     final TextEditingController? _amountController = useTextEditingController();
     final wallets = useProvider(walletProvider.state);
-    wallets.sort((a, b) {
-      if (b.isDefault) {
-        return 1;
-      }
-      return -1;
-    });
-    final selectedWallet = useState(wallets[0].id);
-    final isExpense = useState('Expense');
+    final selectedWalletFrom = useState(wallets[0].id);
+    final selectedWalletTo = useState(wallets[1].id);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Add Transaction'),
+        title: Text('Fund Transfer'),
       ),
       body: SafeArea(
         child: Container(
@@ -45,19 +40,19 @@ class AddTransactionScreen extends HookWidget {
               ),
               Row(
                 children: [
-                  Text('Transaction From '),
+                  Text('Transfer from From '),
                   SizedBox(
                     width: 10,
                   ),
                   DropdownButton(
-                    value: selectedWallet.value,
+                    value: selectedWalletFrom.value,
                     onChanged: (dynamic value) {
-                      selectedWallet.value = value;
+                      selectedWalletFrom.value = value;
                     },
                     hint: Text('Select Wallet'),
                     items: wallets.map<DropdownMenuItem<String>>((wallet) {
-                      if(wallet.isDefault) {
-                        selectedWallet.value = wallet.id;
+                      if (wallet.isDefault) {
+                        selectedWalletFrom.value = wallet.id;
                       }
                       return DropdownMenuItem<String>(
                         value: wallet.id,
@@ -68,6 +63,37 @@ class AddTransactionScreen extends HookWidget {
                   ),
                 ],
               ),
+              SizedBox(
+                height: 10.0,
+              ),
+              Row(
+                children: [
+                  Text('Transfer to '),
+                  SizedBox(
+                    width: 10,
+                  ),
+                  DropdownButton(
+                    value: selectedWalletTo.value,
+                    onChanged: (dynamic value) {
+                      selectedWalletTo.value = value;
+                    },
+                    hint: Text('Select Wallet'),
+                    items: wallets.map<DropdownMenuItem<String>>((wallet) {
+                      if (wallet.isDefault) {
+                        selectedWalletTo.value = wallet.id;
+                      }
+                      return DropdownMenuItem<String>(
+                        value: wallet.id,
+                        key: ValueKey(wallet.id),
+                        child: Text('${wallet.id} (\u20B9${wallet.amount})'),
+                      );
+                    }).toList(),
+                  ),
+                ],
+              ),
+              SizedBox(
+                height: 10.0,
+              ),
               TextField(
                 minLines: 5,
                 maxLines: 5,
@@ -75,53 +101,42 @@ class AddTransactionScreen extends HookWidget {
                 decoration: InputDecoration(hintText: 'Description'),
               ),
               SizedBox(
-                height: 10.0,
-              ),
-              Row(
-                children: [
-                  Text('Transaction as '),
-                  SizedBox(
-                    width: 10,
-                  ),
-                  DropdownButton(
-                    value: isExpense.value,
-                    onChanged: (dynamic value) {
-                      isExpense.value = value;
-                    },
-                    hint: Text('Select Transaction Type'),
-                    items: ['Expense', 'Income'].map<DropdownMenuItem<String>>((tType) {
-                      return DropdownMenuItem<String>(
-                        value: tType,
-                        key: ValueKey(tType),
-                        child: Text(tType),
-                      );
-                    }).toList(),
-                  ),
-                ],
-              ),
-              SizedBox(
                 height: 18.0,
               ),
               ElevatedButton.icon(
                 onPressed: () {
-                  TransactionModel _transaction = TransactionModel(
+                  TransactionModel transactionTransferFrom = TransactionModel(
                     title: _titleController!.text,
                     amount: int.parse(_amountController!.text),
-                    wallet: selectedWallet.value,
-                    description: _descriptionController!.text,
+                    wallet: selectedWalletFrom.value,
+                    description: 'Transfer to ${selectedWalletTo.value} for ${_descriptionController!.text}',
                     transactionDate: DateTime.now(),
-                    isExpance: isExpense.value == 'Expense',
+                    isExpance: true,
                   );
 
                   context
                       .read(transactionProvider)
-                      .addTransaction(_transaction);
+                      .addTransaction(transactionTransferFrom);
+
+                  TransactionModel transactionTransferTo = TransactionModel(
+                    title: _titleController!.text,
+                    amount: int.parse(_amountController!.text),
+                    wallet: selectedWalletTo.value,
+                    description: 'Transfer from ${selectedWalletFrom.value} for ${_descriptionController!.text}',
+                    transactionDate: DateTime.now(),
+                    isExpance: false,
+                  );
+
+                  context
+                      .read(transactionProvider)
+                      .addTransaction(transactionTransferTo);
 
                   _titleController.clear();
                   _amountController.clear();
                   _descriptionController.clear();
 
-                  Navigator.of(context).pushReplacementNamed(TransactionListScreen.routeName);
+                  Navigator.of(context)
+                      .pushReplacementNamed(WalletScreen.routeName);
                 },
                 icon: Icon(Icons.add_to_photos_outlined),
                 label: Padding(

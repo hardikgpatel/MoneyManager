@@ -4,6 +4,7 @@ class TransactionModel {
   final String description;
   final DateTime transactionDate;
   final int amount;
+  final bool isExpance;
 
   TransactionModel({
     required this.title,
@@ -11,5 +12,6 @@ class TransactionModel {
     this.description = '',
     required this.transactionDate,
     required this.amount,
+    this.isExpance = true,
   });
 }

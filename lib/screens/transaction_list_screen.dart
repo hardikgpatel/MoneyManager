@@ -20,8 +20,10 @@ class TransactionListScreen extends HookWidget {
           ListView.builder(
             itemBuilder: (context, i) {
               return Card(
-                margin:
-                    const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
+                margin: const EdgeInsets.symmetric(
+                  horizontal: 10.0,
+                  vertical: 5.0,
+                ),
                 child: Padding(
                   padding: const EdgeInsets.all(10.0),
                   child: Column(
@@ -41,9 +43,10 @@ class TransactionListScreen extends HookWidget {
                         ),
                       ),
                       Text(
-                        transactions[i].amount.toString(),
+                        '${transactions[i].isExpance ? '-' : '+'}${transactions[i].amount.toString()}',
                         style: TextStyle(
                           fontSize: 16,
+                          color: transactions[i].isExpance ? Colors.red : Colors.green,
                         ),
                       ),
                       Text(
