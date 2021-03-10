@@ -1,7 +1,6 @@
 import 'package:MoneyManager/model/transaction_model.dart';
 import 'package:MoneyManager/provider/transaction_provider.dart';
 import 'package:MoneyManager/provider/wallet_provider.dart';
-import 'package:MoneyManager/screens/transaction_list_screen.dart';
 import 'package:MoneyManager/screens/wallet_screen.dart';
 import 'package:MoneyManager/utils/utils.dart';
 import 'package:flutter/material.dart';
@@ -114,9 +113,9 @@ class TransferFund extends HookWidget {
                   if(selectedAmount <= selectedWalletFromAmount) {
                     TransactionModel transactionTransferFrom = TransactionModel(
                       title: _titleController!.text,
-                      amount: int.parse(_amountController!.text),
+                      amount: int.parse(_amountController.text),
                       wallet: selectedWalletFrom.value,
-                      description: 'Transfer to ${selectedWalletTo.value} for ${_descriptionController!.text}',
+                      description: 'Transfer to ${selectedWalletTo.value} ${_descriptionController!.text != '' ? 'for' : ''} ${_descriptionController.text}',
                       transactionDate: DateTime.now(),
                       isExpance: true,
                     );
@@ -129,7 +128,7 @@ class TransferFund extends HookWidget {
                       title: _titleController.text,
                       amount: int.parse(_amountController.text),
                       wallet: selectedWalletTo.value,
-                      description: 'Transfer from ${selectedWalletFrom.value} for ${_descriptionController.text}',
+                      description: 'Transfer from ${selectedWalletFrom.value}  ${_descriptionController.text != '' ? 'for' : ''} ${_descriptionController.text}',
                       transactionDate: DateTime.now(),
                       isExpance: false,
                     );

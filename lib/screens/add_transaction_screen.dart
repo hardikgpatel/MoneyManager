@@ -1,4 +1,5 @@
 import 'package:MoneyManager/model/transaction_model.dart';
+import 'package:MoneyManager/model/wallet_model.dart';
 import 'package:MoneyManager/provider/transaction_provider.dart';
 import 'package:MoneyManager/provider/wallet_provider.dart';
 import 'package:MoneyManager/screens/transaction_list_screen.dart';
@@ -27,6 +28,43 @@ class AddTransactionScreen extends HookWidget {
     final selectedWallet = useState(wallets[0].id);
     final isExpense = useState('Expense');
 
+    Widget buildWallets() {
+      return Container(
+        height: 100,
+        child: ListView.builder(
+          scrollDirection: Axis.horizontal,
+          itemBuilder: (context, index) {
+            return Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: GestureDetector(
+                onTap: () {
+                  selectedWallet.value = wallets[index].id;
+                },
+                child: Card(
+                  child: Container(
+                    padding: const EdgeInsets.all(8.0),
+                    width: 100,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: selectedWallet.value == wallets[index].id ? Colors.blue : Colors.white),
+                      borderRadius: BorderRadius.circular(5)
+                    ),
+                    child: Column(
+                      children: [
+                        Text(wallets[index].id, style: TextStyle(fontSize: 18),),
+                        SizedBox(height: 10,),
+                        Text(wallets[index].amount.toString()),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
+          itemCount: wallets.length,
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Add Transaction'),
@@ -45,29 +83,14 @@ class AddTransactionScreen extends HookWidget {
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(hintText: 'Amount'),
               ),
-              Row(
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Transaction From '),
                   SizedBox(
-                    width: 10,
+                    height: 10,
                   ),
-                  DropdownButton(
-                    value: selectedWallet.value,
-                    onChanged: (dynamic value) {
-                      selectedWallet.value = value;
-                    },
-                    hint: Text('Select Wallet'),
-                    items: wallets.map<DropdownMenuItem<String>>((wallet) {
-                      if (wallet.isDefault) {
-                        selectedWallet.value = wallet.id;
-                      }
-                      return DropdownMenuItem<String>(
-                        value: wallet.id,
-                        key: ValueKey(wallet.id),
-                        child: Text('${wallet.id} (\u20B9${wallet.amount})'),
-                      );
-                    }).toList(),
-                  ),
+                  Text('Transaction From '),
+                  buildWallets(),
                 ],
               ),
               TextField(
@@ -112,7 +135,8 @@ class AddTransactionScreen extends HookWidget {
                       .firstWhere(
                           (element) => element.id == selectedWallet.value)
                       .amount;
-                  if (selectedAmount <= selectedWalletAmount || isExpense.value == 'Income') {
+                  if (selectedAmount <= selectedWalletAmount ||
+                      isExpense.value == 'Income') {
                     TransactionModel _transaction = TransactionModel(
                       title: _titleController!.text,
                       amount: int.parse(_amountController.text),
@@ -130,8 +154,7 @@ class AddTransactionScreen extends HookWidget {
                     _amountController.clear();
                     _descriptionController.clear();
 
-                    Navigator.of(context)
-                        .pop(TransactionListScreen.routeName);
+                    Navigator.of(context).pop(TransactionListScreen.routeName);
                   } else {
                     Utils.showCustomDialog(
                       context: context,
