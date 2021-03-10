@@ -3,6 +3,7 @@ import 'package:MoneyManager/provider/transaction_provider.dart';
 import 'package:MoneyManager/provider/wallet_provider.dart';
 import 'package:MoneyManager/screens/transaction_list_screen.dart';
 import 'package:MoneyManager/screens/wallet_screen.dart';
+import 'package:MoneyManager/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -105,38 +106,53 @@ class TransferFund extends HookWidget {
               ),
               ElevatedButton.icon(
                 onPressed: () {
-                  TransactionModel transactionTransferFrom = TransactionModel(
-                    title: _titleController!.text,
-                    amount: int.parse(_amountController!.text),
-                    wallet: selectedWalletFrom.value,
-                    description: 'Transfer to ${selectedWalletTo.value} for ${_descriptionController!.text}',
-                    transactionDate: DateTime.now(),
-                    isExpance: true,
-                  );
+                  final int selectedAmount = int.parse(_amountController!.text);
+                  final int selectedWalletFromAmount = wallets
+                      .firstWhere(
+                          (element) => element.id == selectedWalletFrom.value)
+                      .amount;
+                  if(selectedAmount <= selectedWalletFromAmount) {
+                    TransactionModel transactionTransferFrom = TransactionModel(
+                      title: _titleController!.text,
+                      amount: int.parse(_amountController!.text),
+                      wallet: selectedWalletFrom.value,
+                      description: 'Transfer to ${selectedWalletTo.value} for ${_descriptionController!.text}',
+                      transactionDate: DateTime.now(),
+                      isExpance: true,
+                    );
 
-                  context
-                      .read(transactionProvider)
-                      .addTransaction(transactionTransferFrom);
+                    context
+                        .read(transactionProvider)
+                        .addTransaction(transactionTransferFrom);
 
-                  TransactionModel transactionTransferTo = TransactionModel(
-                    title: _titleController!.text,
-                    amount: int.parse(_amountController!.text),
-                    wallet: selectedWalletTo.value,
-                    description: 'Transfer from ${selectedWalletFrom.value} for ${_descriptionController!.text}',
-                    transactionDate: DateTime.now(),
-                    isExpance: false,
-                  );
+                    TransactionModel transactionTransferTo = TransactionModel(
+                      title: _titleController.text,
+                      amount: int.parse(_amountController.text),
+                      wallet: selectedWalletTo.value,
+                      description: 'Transfer from ${selectedWalletFrom.value} for ${_descriptionController.text}',
+                      transactionDate: DateTime.now(),
+                      isExpance: false,
+                    );
 
-                  context
-                      .read(transactionProvider)
-                      .addTransaction(transactionTransferTo);
+                    context
+                        .read(transactionProvider)
+                        .addTransaction(transactionTransferTo);
 
-                  _titleController.clear();
-                  _amountController.clear();
-                  _descriptionController.clear();
+                    _titleController.clear();
+                    _amountController.clear();
+                    _descriptionController.clear();
 
-                  Navigator.of(context)
-                      .pushReplacementNamed(WalletScreen.routeName);
+                    Navigator.of(context)
+                        .pop(WalletScreen.routeName);
+                  }else {
+                    Utils.showCustomDialog(
+                      context: context,
+                      title: 'Insufficient fund',
+                      content:
+                      'Your wallet \'${selectedWalletFrom.value}\' does not have enough fund to complete this transaction, you required more \u20B9${selectedAmount - selectedWalletFromAmount} to complete this transaction',
+                    );
+                  }
+
                 },
                 icon: Icon(Icons.add_to_photos_outlined),
                 label: Padding(

@@ -30,14 +30,14 @@ class TransactionListScreen extends HookWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        transactions[i].title!,
+                        transactions[i].title,
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
                       Text(
-                        transactions[i].wallet!,
+                        transactions[i].wallet,
                         style: TextStyle(
                           fontSize: 16,
                         ),
@@ -56,7 +56,7 @@ class TransactionListScreen extends HookWidget {
                         ),
                       ),
                       Text(
-                        '${transactions[i].transactionDate!.day}/${transactions[i].transactionDate!.month}/${transactions[i].transactionDate!.year}  ${transactions[i].transactionDate!.hour}:${transactions[i].transactionDate!.minute}',
+                        '${transactions[i].transactionDate.day}/${transactions[i].transactionDate.month}/${transactions[i].transactionDate.year}  ${transactions[i].transactionDate.hour}:${transactions[i].transactionDate.minute}',
                         style: TextStyle(
                           color: Colors.grey,
                         ),

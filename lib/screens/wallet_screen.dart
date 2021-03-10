@@ -12,7 +12,7 @@ class WalletScreen extends HookWidget {
   Widget build(BuildContext context) {
     final wallets = useProvider(walletProvider.state);
     wallets.sort((a, b) {
-      if (b.isDefault!) {
+      if (b.isDefault) {
         return 1;
       }
       return -1;
@@ -49,7 +49,7 @@ class WalletScreen extends HookWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(wallets[index].id!),
+                          Text(wallets[index].id),
                           PopupMenuButton(
                             onSelected: (dynamic value) {
                               if (value == 'default') {
@@ -65,7 +65,7 @@ class WalletScreen extends HookWidget {
                             itemBuilder: (context) => [
                               renderPopupMenuItem('Edit wallet', 'edit'),
                               renderPopupMenuItem('Mark as default', 'default'),
-                              if (!wallets[index].isDefault!)
+                              if (!wallets[index].isDefault)
                                 renderPopupMenuItem('Remove wallet', 'delete'),
                             ],
                             child: Container(
@@ -82,7 +82,7 @@ class WalletScreen extends HookWidget {
                       ),
                       Text(wallets[index].amount.toString()),
                       Text(
-                        wallets[index].isDefault!
+                        wallets[index].isDefault
                             ? 'Primary Wallet'
                             : 'Secondary Waller',
                       ),
