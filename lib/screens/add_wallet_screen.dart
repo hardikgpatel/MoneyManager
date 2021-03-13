@@ -1,17 +1,23 @@
 import 'package:MoneyManager/model/wallet_model.dart';
 import 'package:MoneyManager/provider/wallet_provider.dart';
+import 'package:MoneyManager/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class AddWalletScreen extends HookWidget {
   static const routeName = 'AddWalletScreen';
 
   @override
   Widget build(BuildContext context) {
-    final isDefaultWallet = useState(context.read(walletProvider.state).length == 0);
-    final TextEditingController? nameTextController = useTextEditingController();
-    final TextEditingController? openingAmountController = useTextEditingController();
+    final wallets = useProvider(walletProvider.state);
+    final isDefaultWallet =
+        useState(wallets.length == 0);
+    final TextEditingController? nameTextController =
+        useTextEditingController();
+    final TextEditingController? openingAmountController =
+        useTextEditingController();
 
     return Scaffold(
       appBar: AppBar(
@@ -57,21 +63,37 @@ class AddWalletScreen extends HookWidget {
             ),
             ElevatedButton.icon(
               onPressed: () {
+                if (nameTextController != null &&
+                    nameTextController.text.isNotEmpty && openingAmountController != null && openingAmountController.text.isNotEmpty) {
 
-                final  walletModel = WalletModel(
-                  id: nameTextController!.text,
-                  amount: int.parse(openingAmountController!.text),
-                  isDefault: isDefaultWallet.value,
-                  createdDate: DateTime.now(),
-                );
+                  final isWallet = wallets.where(
+                      (element) => element.id == nameTextController.text);
+                  if (isWallet.length == 0) {
+                    final walletModel = WalletModel(
+                      id: nameTextController.text,
+                      amount: int.parse(openingAmountController!.text),
+                      isDefault: isDefaultWallet.value,
+                      createdDate: DateTime.now(),
+                    );
 
-                context
-                    .read(walletProvider)
-                    .addWallet(walletModel);
+                    context.read(walletProvider).addWallet(walletModel);
 
-                nameTextController.clear();
-                openingAmountController.clear();
-                Navigator.of(context).pop();
+                    nameTextController.clear();
+                    openingAmountController.clear();
+                    Navigator.of(context).pop();
+                  } else {
+                    Utils.showCustomDialog(
+                        context: context,
+                        title: 'Invalid Detail',
+                        content:
+                            'Please enter another name this wallet already exist');
+                  }
+                } else {
+                  Utils.showCustomDialog(
+                      context: context,
+                      title: 'Invalid Detail',
+                      content: 'Please enter wallet name, and amount');
+                }
               },
               icon: Icon(Icons.account_balance_wallet_outlined),
               label: Padding(
