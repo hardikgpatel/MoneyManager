@@ -1,6 +1,7 @@
 import 'package:MoneyManager/provider/transaction_provider.dart';
 import 'package:MoneyManager/screens/add_transaction_screen.dart';
 import 'package:MoneyManager/screens/home_screen.dart';
+import 'package:MoneyManager/widget/timer_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -49,18 +50,14 @@ class TransactionListScreen extends HookWidget {
                           color: transactions[i].isExpance ? Colors.red : Colors.green,
                         ),
                       ),
+                      if(transactions[i].description.isNotEmpty)
                       Text(
                         transactions[i].description,
                         style: TextStyle(
                           color: Colors.grey,
                         ),
                       ),
-                      Text(
-                        '${transactions[i].transactionDate.day}/${transactions[i].transactionDate.month}/${transactions[i].transactionDate.year}  ${transactions[i].transactionDate.hour}:${transactions[i].transactionDate.minute}',
-                        style: TextStyle(
-                          color: Colors.grey,
-                        ),
-                      ),
+                      TimerWidget(time: transactions[i].transactionDate),
                     ],
                   ),
                 ),

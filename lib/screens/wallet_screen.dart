@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:MoneyManager/provider/wallet_provider.dart';
 import 'package:MoneyManager/screens/add_wallet_screen.dart';
 import 'package:flutter/material.dart';
@@ -50,34 +52,32 @@ class WalletScreen extends HookWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(wallets[index].id),
-                          PopupMenuButton(
-                            onSelected: (dynamic value) {
-                              if (value == 'default') {
-                                context
-                                    .read(walletProvider)
-                                    .markAsDefault(walletId: wallets[index].id);
-                              } else if (value == 'delete') {
-                                context
-                                    .read(walletProvider)
-                                    .removeWallet(walletId: wallets[index].id);
-                              }
-                            },
-                            itemBuilder: (context) => [
-                              renderPopupMenuItem('Edit wallet', 'edit'),
-                              renderPopupMenuItem('Mark as default', 'default'),
-                              if (!wallets[index].isDefault)
+                          if (!wallets[index].isDefault)
+                            PopupMenuButton(
+                              onSelected: (dynamic value) {
+                                if (value == 'default') {
+                                  context.read(walletProvider).markAsDefault(
+                                      walletId: wallets[index].id);
+                                } else if (value == 'delete') {
+                                  context.read(walletProvider).removeWallet(
+                                      walletId: wallets[index].id);
+                                }
+                              },
+                              itemBuilder: (context) => [
+                                renderPopupMenuItem(
+                                    'Mark as default', 'default'),
                                 renderPopupMenuItem('Remove wallet', 'delete'),
-                            ],
-                            child: Container(
-                              child: Align(
-                                alignment: Alignment.centerRight,
-                                child: Icon(
-                                  Icons.more_vert,
-                                  size: 20,
+                              ],
+                              child: Container(
+                                child: Align(
+                                  alignment: Alignment.centerRight,
+                                  child: Icon(
+                                    Icons.more_vert,
+                                    size: 20,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
                         ],
                       ),
                       Text(wallets[index].amount.toString()),

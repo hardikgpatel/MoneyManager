@@ -67,11 +67,11 @@ class AddWalletScreen extends HookWidget {
                     nameTextController.text.isNotEmpty && openingAmountController != null && openingAmountController.text.isNotEmpty) {
 
                   final isWallet = wallets.where(
-                      (element) => element.id == nameTextController.text);
+                      (element) => element.id.toLowerCase() == nameTextController.text.toLowerCase() );
                   if (isWallet.length == 0) {
                     final walletModel = WalletModel(
                       id: nameTextController.text,
-                      amount: int.parse(openingAmountController!.text),
+                      amount: int.parse(openingAmountController.text),
                       isDefault: isDefaultWallet.value,
                       createdDate: DateTime.now(),
                     );
