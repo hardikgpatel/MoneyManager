@@ -1,6 +1,9 @@
 import 'package:MoneyManager/provider/transaction_provider.dart';
 import 'package:MoneyManager/screens/add_transaction_screen.dart';
-import 'package:MoneyManager/screens/home_screen.dart';
+import 'package:MoneyManager/utils/images.dart';
+import 'package:MoneyManager/widget/ListWidget.dart';
+import 'package:MoneyManager/widget/transaction_item.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:MoneyManager/widget/timer_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -18,50 +21,11 @@ class TransactionListScreen extends HookWidget {
       ),
       body: Stack(
         children: [
-          ListView.builder(
+          ListWidget(
+            emptyListImage: Images.EMPTY_LIST,
+            emptyListMessage: 'No transactions found',
             itemBuilder: (context, i) {
-              return Card(
-                margin: const EdgeInsets.symmetric(
-                  horizontal: 10.0,
-                  vertical: 5.0,
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        transactions[i].title,
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      Text(
-                        transactions[i].wallet,
-                        style: TextStyle(
-                          fontSize: 16,
-                        ),
-                      ),
-                      Text(
-                        '${transactions[i].isExpance ? '-' : '+'}${transactions[i].amount.toString()}',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: transactions[i].isExpance ? Colors.red : Colors.green,
-                        ),
-                      ),
-                      if(transactions[i].description.isNotEmpty)
-                      Text(
-                        transactions[i].description,
-                        style: TextStyle(
-                          color: Colors.grey,
-                        ),
-                      ),
-                      TimerWidget(time: transactions[i].transactionDate),
-                    ],
-                  ),
-                ),
-              );
+              return TransactionItem(transaction: transactions[i]);
             },
             itemCount: transactions.length,
           ),

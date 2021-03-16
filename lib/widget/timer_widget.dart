@@ -10,17 +10,17 @@ class TimerWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String _number = '0', _unit = 'day';
+    String _number = '', _unit = 'now';
 
     final now = DateTime.now();
-    final difference = time.difference(now);
+    final difference = now.difference(time);
 
     final diffInDays = difference.inDays;
     final diffInHours = difference.inHours;
     final diffInMinutes = difference.inMinutes;
     final diffInSeconds = difference.inSeconds;
 
-    print('diddd d : ${diffInDays}');
+    print('diddd d : ${ diffInDays} - $diffInHours - $diffInMinutes - $diffInSeconds}');
 
     if (diffInDays > 2) {
       _number = '';
@@ -48,14 +48,14 @@ class TimerWidget extends StatelessWidget {
           text: TextSpan(
             children: [
               TextSpan(
-                  text: _number,
+                  text: '$_number ',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     color: Color(0xff8E8D8D),
                     fontSize: 12,
                   )),
               TextSpan(
-                text: ' $_unit ago',
+                text: _unit,
                 style: TextStyle(
                   color: Color(0xff8E8D8D),
                   fontSize: 12,
