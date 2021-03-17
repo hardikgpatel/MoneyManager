@@ -1,3 +1,4 @@
+import 'package:MoneyManager/screens/Speech.dart';
 import 'package:MoneyManager/screens/add_transaction_screen.dart';
 import 'package:MoneyManager/screens/add_wallet_screen.dart';
 import 'package:MoneyManager/screens/home_screen.dart';
@@ -15,7 +16,6 @@ class Routes {
             return HomeScreen();
           },
         );
-
       case TransactionListScreen.routeName:
         return MaterialPageRoute(
           builder: (context) {
@@ -45,6 +45,12 @@ class Routes {
         return MaterialPageRoute(
           builder: (context) {
             return TransferFund();
+          },
+        );
+      case SpeechCommandScreen.routeName:
+        return MaterialPageRoute(
+          builder: (context) {
+            return SpeechCommandScreen();
           },
         );
       default:

@@ -39,7 +39,7 @@ class AddTransactionScreen extends HookWidget {
         child: ListView.builder(
           scrollDirection: Axis.horizontal,
           itemBuilder: (context, index) {
-            final bool isValid = transactionAmount.value <= wallets[index].amount;
+            final bool isValid = isExpense.value == 'Expense' ? transactionAmount.value <= wallets[index].amount : true;
             return Padding(
               padding: const EdgeInsets.all(8.0),
               child: GestureDetector(
