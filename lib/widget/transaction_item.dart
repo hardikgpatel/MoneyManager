@@ -27,29 +27,23 @@ class TransactionItem extends StatelessWidget {
                 fontWeight: FontWeight.w500,
               ),
             ),
-            Text(
-              transaction.wallet,
-              style: TextStyle(
-                fontSize: 16,
-              ),
-            ),
-            Text(
-              '${transaction.isExpance ? '-' : '+'}${transaction.amount.toString()}',
-              style: TextStyle(
-                fontSize: 16,
-                color: transaction.isExpance
-                    ? Colors.red
-                    : Colors.green,
-              ),
-            ),
-            if (transaction.description.isNotEmpty)
-              Text(
-                transaction.description,
-                style: TextStyle(
-                  color: Colors.grey,
+            SizedBox(height: 10,),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  '${transaction.isExpance ? '-' : '+'}${transaction.amount.toString()}',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: transaction.isExpance
+                        ? Colors.red
+                        : Colors.green,
+                  ),
                 ),
-              ),
-            TimerWidget(time: transaction.transactionDate),
+                TimerWidget(time: transaction.transactionDate),
+              ],
+            ),
+
           ],
         ),
       ),
