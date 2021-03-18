@@ -1,59 +1,162 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:MoneyManager/model/transaction_model.dart';
+import 'package:MoneyManager/provider/transaction_provider.dart';
+import 'package:MoneyManager/provider/wallet_provider.dart';
+import 'package:MoneyManager/utils/utils.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 
-class SpeechCommandScreen extends StatefulWidget {
+class SpeechCommandScreen extends HookWidget {
   static const routeName = 'SpeechCommandScreen';
 
   @override
-  _SpeechCommandScreenState createState() => _SpeechCommandScreenState();
-}
+  Widget build(BuildContext context) {
+    final _hasSpeech = useState(false);
+    final level = useState<double>(0.0);
+    final minSoundLevel = useState<double>(50000);
+    final maxSoundLevel = useState<double>(-50000);
+    final lastWords = useState('');
+    final lastError = useState('');
+    final lastStatus = useState('');
+    final _currentLocaleId = useState('');
+    final resultListened = useState(0);
+    final isExpanse = useState(false);
+    final isIncome = useState(false);
+    final amount = useState('');
+    final _localeNames = useState<List<LocaleName>>([]);
+    final SpeechToText speech = SpeechToText();
 
-class _SpeechCommandScreenState extends State<SpeechCommandScreen> {
-  bool _hasSpeech = false;
-  double level = 0.0;
-  double minSoundLevel = 50000;
-  double maxSoundLevel = -50000;
-  String lastWords = '';
-  String lastError = '';
-  String lastStatus = '';
-  String _currentLocaleId = '';
-  int resultListened = 0;
-  bool isExpanse = false;
-  bool isIncome = false;
-  String amount = "";
-  List<LocaleName> _localeNames = [];
-  final SpeechToText speech = SpeechToText();
+    final transactions = useProvider(transactionProvider.state);
+    final wallets = useProvider(walletProvider.state);
 
-  @override
-  void initState() {
-    super.initState();
-    _hasSpeech ? null : initSpeechState();
-  }
+    resultListener(SpeechRecognitionResult result) {
+      ++resultListened.value;
+      print('Result listener $resultListened - $result');
+      List<String> words = result.recognizedWords.split(" ");
+      isExpanse.value = words.contains("chukavya") ||
+          words.contains("apya") ||
+          words.contains("kharcha") ||
+          words.contains("paid") ||
+          words.contains("pay") ||
+          words.contains("given") ||
+          words.contains("spent") ||
+          words.contains("debited") ||
+          words.contains("spend");
+      isIncome.value = words.contains("back") || words.contains("add") || words.contains("credited");
+      words.forEach((element) {
+        final number = num.tryParse(element);
+        if (number != null) {
+          amount.value = element;
+        }
+      });
 
-  Future<void> initSpeechState() async {
-    var hasSpeech = await speech.initialize(
-        onError: errorListener, onStatus: statusListener, debugLogging: true);
-    if (hasSpeech) {
-      _localeNames = await speech.locales();
+      void showAlert(String title, String message) {
+        Utils.showCustomDialog(context: context, title: title, content: message);
+      }
 
-      var systemLocale = await speech.systemLocale();
-      _currentLocaleId = systemLocale!.localeId;
+      if ((isExpanse.value || isIncome.value) && amount.value.isNotEmpty) {
+        Utils.showTransactionDialog(
+            context: context,
+            title: 'transaction',
+            content:
+                'transaction of ${amount.value} as ${isExpanse.value ? 'Expanse' : ''}${isIncome.value ? 'Income' : ''}',
+            onSubmit: () {
+
+              var wallet = wallets.firstWhere((element) {
+                if(isExpanse.value) {
+                  if(element.isDefault && element.amount >= int.parse(amount.value))
+                    return true;
+                } else {
+                  return true;
+                }
+                return false;
+              });
+
+              if(wallet == null) {
+                wallet= wallets.firstWhere((element){
+                  if(isIncome.value) {
+                    return true;
+                  } else if (element.amount >= int.parse(amount.value)){
+                    return true;
+                  }
+                  return false;
+                });
+              }
+
+              TransactionModel _transaction = TransactionModel(
+                title: 'Voice command',
+                amount: int.parse(amount.value),
+                wallet: wallet.id,
+                description: result.recognizedWords,
+                transactionDate: DateTime.now(),
+                isExpance: isExpanse.value,
+              );
+
+              context
+                  .read(transactionProvider)
+                  .addTransaction(_transaction);
+              showAlert('Success', 'Transaction added');
+            });
+      } else {
+        showAlert('Error', 'Sorry, not hear you properly please give proper command');
+      }
+
+      print(
+          'update = ${amount.value} - ${isIncome.value} - ${isExpanse.value}');
     }
 
-    if (!mounted) return;
+    void soundLevelListener(double lvl) {
+      minSoundLevel.value = min(minSoundLevel.value, lvl);
+      maxSoundLevel.value = max(maxSoundLevel.value, lvl);
+      level.value = lvl;
+    }
 
-    setState(() {
-      _hasSpeech = hasSpeech;
-    });
-  }
+    void startListening() {
+      lastWords.value = '';
+      lastError.value = '';
+      speech.listen(
+        onResult: resultListener,
+        listenFor: Duration(seconds: 5),
+        pauseFor: Duration(seconds: 5),
+        partialResults: false,
+        localeId: _currentLocaleId.value,
+        onSoundLevelChange: soundLevelListener,
+        cancelOnError: true,
+        listenMode: ListenMode.confirmation,
+      );
+    }
 
-  @override
-  Widget build(BuildContext context) {
+    void stopListening() {
+      speech.stop();
+      level.value = 0.0;
+    }
+
+    void errorListener(SpeechRecognitionError error) {
+      lastError.value = '${error.errorMsg} - ${error.permanent}';
+    }
+
+    void statusListener(String status) {
+      lastStatus.value = '$status';
+    }
+
+    Future<void> initSpeechState() async {
+      var hasSpeech = await speech.initialize(
+          onError: errorListener, onStatus: statusListener, debugLogging: true);
+      if (hasSpeech) {
+        _localeNames.value = await speech.locales();
+        var systemLocale = await speech.systemLocale();
+        _currentLocaleId.value = systemLocale!.localeId;
+      }
+      _hasSpeech.value = hasSpeech;
+    }
+
+    _hasSpeech.value ? null : initSpeechState();
     return Scaffold(
       appBar: AppBar(
         title: const Text('Speak to go'),
@@ -69,18 +172,23 @@ class _SpeechCommandScreenState extends State<SpeechCommandScreen> {
                     color: Theme.of(context).selectedRowColor,
                     child: Column(
                       children: [
-                        SizedBox(height: 20.0,),
+                        SizedBox(
+                          height: 20.0,
+                        ),
                         Center(
                           child: Text(
-                            lastWords,
+                            lastWords.value,
                             textAlign: TextAlign.center,
                           ),
                         ),
-                        SizedBox(height: 20.0,),
-                        if (lastWords.isNotEmpty)
-                          ((isExpanse || isIncome) && amount.isNotEmpty)
+                        SizedBox(
+                          height: 20.0,
+                        ),
+                        if (lastWords.value.isNotEmpty)
+                          ((isExpanse.value || isIncome.value) &&
+                                  amount.value.isNotEmpty)
                               ? Text(
-                                  'transaction of $amount as ${isExpanse ? 'Expanse' : ''}${isIncome ? 'Income' : ''}')
+                                  'transaction of ${amount.value} as ${isExpanse.value ? 'Expanse' : ''}${isIncome.value ? 'Income' : ''}')
                               : Text('Bade try')
                       ],
                     ),
@@ -99,7 +207,7 @@ class _SpeechCommandScreenState extends State<SpeechCommandScreen> {
                       boxShadow: [
                         BoxShadow(
                           blurRadius: .26,
-                          spreadRadius: level * 1.5,
+                          spreadRadius: level.value * 1.5,
                           color: Colors.black.withOpacity(.05),
                         )
                       ],
@@ -133,7 +241,7 @@ class _SpeechCommandScreenState extends State<SpeechCommandScreen> {
                 ),
               ),
               Center(
-                child: Text(lastError),
+                child: Text(lastError.value),
               ),
             ],
           ),
@@ -155,87 +263,5 @@ class _SpeechCommandScreenState extends State<SpeechCommandScreen> {
         ],
       ),
     );
-  }
-
-  void startListening() {
-    lastWords = '';
-    lastError = '';
-    speech.listen(
-        onResult: resultListener,
-        listenFor: Duration(seconds: 5),
-        pauseFor: Duration(seconds: 5),
-        partialResults: false,
-        localeId: _currentLocaleId,
-        onSoundLevelChange: soundLevelListener,
-        cancelOnError: true,
-        listenMode: ListenMode.confirmation);
-    setState(() {});
-  }
-
-  void stopListening() {
-    speech.stop();
-    setState(() {
-      level = 0.0;
-    });
-  }
-
-  void cancelListening() {
-    speech.cancel();
-    setState(() {
-      level = 0.0;
-    });
-  }
-
-  void resultListener(SpeechRecognitionResult result) {
-    ++resultListened;
-    print('Result listener $resultListened - $result');
-    List<String> words = result.recognizedWords.split(" ");
-    bool exp = words.contains("Kharcha") || words.contains("paid") || words.contains("pay") || words.contains("given") || words.contains("spent") || words.contains("spend");
-    bool incm = words.contains("back") || words.contains("add");
-    String amt="";
-    words.forEach((element) {
-      final number = num.tryParse(element);
-      if (number != null) {
-        amt = element;
-      }
-    });
-    print('$exp - $incm - $amt - ${words.contains("pay")} - $words');
-    setState(() {
-      lastWords = '${result.recognizedWords}';
-      isExpanse = exp;
-      isIncome = incm;
-      amount = amt;
-    });
-  }
-
-  void soundLevelListener(double level) {
-    minSoundLevel = min(minSoundLevel, level);
-    maxSoundLevel = max(maxSoundLevel, level);
-    // print("sound level $level: $minSoundLevel - $maxSoundLevel ");
-    setState(() {
-      this.level = level;
-    });
-  }
-
-  void errorListener(SpeechRecognitionError error) {
-    // print("Received error status: $error, listening: ${speech.isListening}");
-    setState(() {
-      lastError = '${error.errorMsg} - ${error.permanent}';
-    });
-  }
-
-  void statusListener(String status) {
-    // print(
-    // 'Received listener status: $status, listening: ${speech.isListening}');
-    setState(() {
-      lastStatus = '$status';
-    });
-  }
-
-  void _switchLang(selectedVal) {
-    setState(() {
-      _currentLocaleId = selectedVal;
-    });
-    print(selectedVal);
   }
 }
