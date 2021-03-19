@@ -27,19 +27,35 @@ class SpeechCommandScreen extends HookWidget {
     final _currentLocaleId = useState('');
     final resultListened = useState(0);
     final isExpanse = useState(false);
+    final description = useState('');
     final isIncome = useState(false);
     final amount = useState('');
     final _localeNames = useState<List<LocaleName>>([]);
     final SpeechToText speech = SpeechToText();
 
-    final transactions = useProvider(transactionProvider.state);
+    final List<String> expanseKeyword = [
+      'chukavya',
+      'apya',
+      'kharcha',
+      'paid',
+      'pay',
+      'given',
+      'spent',
+      'debited',
+      'spend'
+    ];
+
+    final List<String> incomeKeyword = ['back', 'add', 'credited'];
+
     final wallets = useProvider(walletProvider.state);
 
     resultListener(SpeechRecognitionResult result) {
       ++resultListened.value;
       print('Result listener $resultListened - $result');
       List<String> words = result.recognizedWords.split(" ");
-      isExpanse.value = words.contains("chukavya") ||
+      String desc = result.recognizedWords;
+      String title = '';
+      /*isExpanse.value = words.contains("chukavya") ||
           words.contains("apya") ||
           words.contains("kharcha") ||
           words.contains("paid") ||
@@ -48,16 +64,44 @@ class SpeechCommandScreen extends HookWidget {
           words.contains("spent") ||
           words.contains("debited") ||
           words.contains("spend");
-      isIncome.value = words.contains("back") || words.contains("add") || words.contains("credited");
+      isIncome.value = words.contains("back") || words.contains("add") || words.contains("credited");*/
+
+      expanseKeyword.forEach((element) {
+        if (result.recognizedWords.contains(element)) {
+          isExpanse.value = true;
+        }
+      });
+
+      incomeKeyword.forEach((element) {
+        if (result.recognizedWords.contains(element)) {
+          isIncome.value = true;
+        }
+      });
+
+      try {
+        title = result.recognizedWords.split('for')[1];
+      } catch (e) {
+        print(e);
+      }
+
+      if (title.isEmpty)
+        try {
+          title = result.recognizedWords.split('for')[1];
+        } catch (e) {
+          print(e);
+        }
+
       words.forEach((element) {
         final number = num.tryParse(element);
         if (number != null) {
           amount.value = element;
+          desc.replaceAll(element, '');
         }
       });
 
       void showAlert(String title, String message) {
-        Utils.showCustomDialog(context: context, title: title, content: message);
+        Utils.showCustomDialog(
+            context: context, title: title, content: message);
       }
 
       if ((isExpanse.value || isIncome.value) && amount.value.isNotEmpty) {
@@ -67,22 +111,21 @@ class SpeechCommandScreen extends HookWidget {
             content:
                 'transaction of ${amount.value} as ${isExpanse.value ? 'Expanse' : ''}${isIncome.value ? 'Income' : ''}',
             onSubmit: () {
-
               var wallet = wallets.firstWhere((element) {
-                if(isExpanse.value) {
-                  if(element.isDefault && element.amount >= int.parse(amount.value))
-                    return true;
+                if (isExpanse.value) {
+                  if (element.isDefault &&
+                      element.amount >= int.parse(amount.value)) return true;
                 } else {
                   return true;
                 }
                 return false;
               });
 
-              if(wallet == null) {
-                wallet= wallets.firstWhere((element){
-                  if(isIncome.value) {
+              if (wallet == null) {
+                wallet = wallets.firstWhere((element) {
+                  if (isIncome.value) {
                     return true;
-                  } else if (element.amount >= int.parse(amount.value)){
+                  } else if (element.amount >= int.parse(amount.value)) {
                     return true;
                   }
                   return false;
@@ -90,21 +133,20 @@ class SpeechCommandScreen extends HookWidget {
               }
 
               TransactionModel _transaction = TransactionModel(
-                title: 'Voice command',
+                title: title.isNotEmpty ? title : 'Voice command',
                 amount: int.parse(amount.value),
                 wallet: wallet.id,
-                description: result.recognizedWords,
+                description: desc,
                 transactionDate: DateTime.now(),
                 isExpance: isExpanse.value,
               );
 
-              context
-                  .read(transactionProvider)
-                  .addTransaction(_transaction);
+              context.read(transactionProvider).addTransaction(_transaction);
               showAlert('Success', 'Transaction added');
             });
       } else {
-        showAlert('Error', 'Sorry, not hear you properly please give proper command');
+        showAlert(
+            'Error', 'Sorry, not hear you properly please give proper command');
       }
 
       print(
